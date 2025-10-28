@@ -5,8 +5,11 @@ dest=$2
 registry=$3
 uri=$4
 
-build_path=/tmp/warewulf/build/
-mkdir -p $buildpath
+set -e
+
+build_path=/tmp/warewulf/build
+mkdir -p $build_path
+
 
 skopeo login $3
 apptainer build --sandbox $buildpath/$dest $file 
