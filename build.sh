@@ -5,6 +5,8 @@ registry=$2
 uri=$3
 
 set -e
+dnf -y install -y epel-release skopeo git
+dnf -y install apptainer
 
 build_path=/tmp/warewulf/build
 mkdir -p $build_path
