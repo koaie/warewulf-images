@@ -11,6 +11,6 @@ mkdir -p $buildpath
 skopeo login $3
 apptainer build --sandbox $buildpath/$dest $file 
 tar cvf $build_path/$dest.tar build_path/$dest/*
-skopeo copy tarball:$dest.tar docker://$registry/$uri
+skopeo copy tarball:$build_path/$dest.tar docker://$registry/$uri
 rm -rf "/tmp/warewulf/build"
 
