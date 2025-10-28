@@ -1,3 +1,8 @@
+Bootstrap: yum
+MirrorURL: https://download.rockylinux.org/pub/rocky/10/BaseOS/x86_64/os/
+Include: dnf
+
+%post
 dnf -y install --allowerasing \
   NetworkManager \
   basesystem \
