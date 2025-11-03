@@ -1,0 +1,3 @@
+FROM tea.intra.kat.sh/koa/debian:13
+
+RUN apt update && apt install -y git gettext-base podman
