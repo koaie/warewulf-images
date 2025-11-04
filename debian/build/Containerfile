@@ -1,3 +1,13 @@
 FROM tea.intra.kat.sh/koa/debian:13
 
-RUN apt update && apt install -y git gettext-base podman
+ENV APPTAINER_URL="https://github.com/apptainer/apptainer/releases/download/v1.2.5/apptainer_1.2.5_amd64.deb"
+ENV APPTAINER_PATH="/tmp/apptainer.deb"
+
+RUN apt-get update && apt-get upgrade && apt-get install -y git gettext-base podman curl skopeo
+
+RUN curl -L "https://dl.gitea.com/act_runner/0.2.13/act_runner-0.2.13-linux-amd64" -o /usr/local/bin/act_runner && \
+    chmod +x /usr/local/bin/act_runner
+
+RUN curl -L "${APPTAINER_URL}" -o "${APPTAINER_PATH}" && \
+    apt-get install -y "${APPTAINER_PATH}" && \
+    rm "${APPTAINER_PATH}"
