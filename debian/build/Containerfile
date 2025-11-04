@@ -10,4 +10,5 @@ RUN curl -L "https://dl.gitea.com/act_runner/0.2.13/act_runner-0.2.13-linux-amd6
 
 RUN curl -L "${APPTAINER_URL}" -o "${APPTAINER_PATH}" && \
     apt-get install -y "${APPTAINER_PATH}" && \
-    rm "${APPTAINER_PATH}"
+    rm "${APPTAINER_PATH}" && \
+    rm -rf /var/lib/apt/lists/*
