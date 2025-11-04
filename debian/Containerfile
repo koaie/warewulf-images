@@ -17,8 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	ifupdown \
 	linux-image-$(dpkg --print-architecture) \
 	ifmetric \
-	netbase \
-	qemu-guest-agent && \ 
+	netbase && \
 	rm -rf /var/lib/apt/lists/*
 
 

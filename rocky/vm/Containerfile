@@ -1,0 +1,5 @@
+FROM tea.intra.kat.sh/koa/rockylinux:10
+
+RUN dnf update \
+    && dnf -y install dnf-plugins-core epel-release kernel-headers \
+    && dnf -y install qemu-guest-agent
