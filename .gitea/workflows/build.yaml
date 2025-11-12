@@ -14,14 +14,6 @@ jobs:
         env:
           GITEA_INSTANCE: ${{ gitea.instance }}
 
-      - name: Log in to Gitea Container Registry
-        # This step is still useful as it authenticates podman
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: ${{ env.REGISTRY_HOST }}
-          username: ${{ gitea.actor }}
-          password: ${{ secrets.GITEA_TOKEN }}
-
       - name: Find, Build, and Push All Containers
         run: |
           set -e # Exit immediately if a command fails
