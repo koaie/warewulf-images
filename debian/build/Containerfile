@@ -1,4 +1,4 @@
-FROM tea.intra.kat.sh/koa/debian:13
+FROM tea.intra.kat.sh/koa/debian:latest
 
 ENV APPTAINER_URL="https://github.com/apptainer/apptainer/releases/download/v1.2.5/apptainer_1.2.5_amd64.deb"
 ENV APPTAINER_PATH="/tmp/apptainer.deb"
