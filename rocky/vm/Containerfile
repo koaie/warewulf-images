@@ -1,4 +1,4 @@
-FROM tea.intra.kat.sh/koa/rocky:10
+FROM tea.intra.kat.sh/koa/rocky:latest
 
 # First, run the update
 # We must use exec form: ["executable", "param1", "param2"]

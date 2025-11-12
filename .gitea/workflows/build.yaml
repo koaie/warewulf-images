@@ -31,7 +31,7 @@ jobs:
           echo "Registry base URL: $REGISTRY_BASE"
           
           # Find all files named 'Containerfile' and loop through them
-          find . -name Containerfile | while read -r cfile; do
+          find . -name Containerfile | awk -F/ '{ print NF, $0 }' | sort -n | cut -d' ' -f2- | while read -r cfile; do
               # Remove the leading './' for cleaner names
               cfile_clean=$(echo "$cfile" | sed 's|^\./||') # e.g., rocky/vm/Containerfile
               
