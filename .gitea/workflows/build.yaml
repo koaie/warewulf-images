@@ -9,6 +9,13 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
+      - name: Log in to continer registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.GITEA_TOKEN }}
+          registry: ${{ vars.REPO_BASE }}
+
       - name: Find, Build, and Push All Containers
         run: |
           set -e # Exit immediately if a command fails
