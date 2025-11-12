@@ -16,5 +16,4 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ gitea.workspace }}
-          podman --version
       - run: echo "🍏 This job's status is ${{ job.status }}."
