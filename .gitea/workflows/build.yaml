@@ -1,0 +1,70 @@
+steps:
+  - name: Check out repository code
+    uses: actions/checkout@v4
+
+  - name: Log in to Gitea Container Registry
+    # Use the podman login action
+    uses: redhat-actions/podman-login@v1
+    with:
+      # Use the Gitea instance URL as the registry
+      registry: ${{ gitea.instance_url_no_protocol }}
+      # Use the user who triggered the workflow
+      username: ${{ gitea.actor }}
+      # Use the auto-generated GITEA_TOKEN for authentication
+      password: ${{ secrets.GITEA_TOKEN }}
+
+  # --- Build 1: debian:latest ---
+  - name: Build debian:latest
+    id: build-debian
+    uses: redhat-actions/buildah-build@v2
+    with:
+      image: debian
+      tags: latest
+      dockerfiles: |
+        ./debian/Containerfile
+      context: ./debian
+
+  - name: Push debian:latest
+    uses: redhat-actions/push-to-registry@v2
+    with:
+      image: ${{ steps.build-debian.outputs.image }}
+      tags: ${{ steps.build-debian.outputs.tags }}
+      # Gitea registry path is {instance_url}/{owner}/{image}
+      registry: ${{ gitea.instance_url_no_protocol }}/${{ gitea.repository_owner }}
+
+  # --- Build 2: rocky:latest ---
+  - name: Build rocky:latest
+    id: build-rocky
+    uses: redhat-actions/buildah-build@v2
+    with:
+      image: rocky
+      tags: latest
+      dockerfiles: |
+        ./rocky/Containerfile
+      context: ./rocky
+
+  - name: Push rocky:latest
+    uses: redhat-actions/push-to-registry@v2
+    with:
+      image: ${{ steps.build-rocky.outputs.image }}
+      tags: ${{ steps.build-rocky.outputs.tags }}
+      registry: ${{ gitea.instance_url_no_protocol }}/${{ gitea.repository_owner }}
+
+  # --- Build 3: rocky:vm ---
+  - name: Build rocky:vm
+    id: build-rocky-vm
+    uses: redhat-actions/buildah-build@v2
+    with:
+      # This builds the 'rocky' image with the 'vm' tag
+      image: rocky
+      tags: vm
+      dockerfiles: |
+        ./rocky/vm/Containerfile
+      context: ./rocky/vm
+
+  - name: Push rocky:vm
+    uses: redhat-actions/push-to-registry@v2
+    with:
+      image: ${{ steps.build-rocky-vm.outputs.image }}
+      tags: ${{ steps.build-rocky-vm.outputs.tags }}
+      registry: ${{ gitea.instance_url_no_protocol }}/${{ gitea.repository_owner }}
