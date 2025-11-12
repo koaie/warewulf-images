@@ -15,6 +15,7 @@ jobs:
           username: ${{ gitea.actor }}
           password: ${{ secrets.PASSWORD }}
           registry: ${{ vars.REPO_BASE }}
+          auth_file_path: /run/user/1000/containers/auth.json
 
       - name: Find, Build, and Push All Containers
         run: |
