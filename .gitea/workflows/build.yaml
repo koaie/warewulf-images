@@ -1,4 +1,4 @@
-name: Build images
+ame: Build images
 run-name: ${{ gitea.actor }} Building warewulf images
 on: [push]
 
@@ -9,11 +9,16 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
+      - name: Set registry host environment variable
+        run: echo "REGISTRY_HOST=$(echo $GITEA_INSTANCE | sed 's|https://||;s|http://||')" >> $GITEA_ENV
+        env:
+          GITEA_INSTANCE: ${{ gitea.instance }}
+
       - name: Log in to Gitea Container Registry
         # This step is still useful as it authenticates podman
         uses: redhat-actions/podman-login@v1
         with:
-          registry: ${{ gitea.instance_url_no_protocol }}
+          registry: ${{ env.REGISTRY_HOST }}
           username: ${{ gitea.actor }}
           password: ${{ secrets.GITEA_TOKEN }}
 
@@ -22,7 +27,11 @@ jobs:
           set -e # Exit immediately if a command fails
           
           # Set the base URL for your Gitea registry
-          REGISTRY_BASE="${{ gitea.instance_url_no_protocol }}/${{ gitea.repository_owner }}"
+          # Gitea variables like instance_url and owner are already lowercase
+          REGISTRY_BASE="${{ env.REGISTRY_HOST }}/${{ gitea.repository_owner }}"
+          
+          # Get a lowercase version of the repo name for the root case
+          REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
           
           echo "Registry base URL: $REGISTRY_BASE"
           
@@ -32,31 +41,32 @@ jobs:
               cfile_clean=$(echo "$cfile" | sed 's|^\./||') # e.g., rocky/vm/Containerfile
               
               # Get the directory of the Containerfile (this is the build context)
-              context_dir=$(dirname "$cfile_clean") # e.g., rocky/vm
-              
-              # Get the name of the build context directory
-              current_dir_name=$(basename "$context_dir") # e.g., vm
-              
-              # Get the path of the parent directory
-              parent_dir_path=$(dirname "$context_dir") # e.g., rocky
+              context_dir=$(dirname "$cfile_clean") # e.g., rocky/vm or .
               
               image_name=""
               image_tag=""
 
-              # Check if we are in a top-level directory (parent is '.')
-              if [ "$parent_dir_path" = "." ]; then
-                  # This is a main folder (e.g., debian)
-                  image_name="$current_dir_name"
+              # Check if this is the root Containerfile
+              if [ "$context_dir" = "." ]; then
+                  image_name="$REPO_NAME_LOWER"
                   image_tag="latest"
               else
-                  # This is a subdir (e.g., rocky/vm)
-                  # Parent's name is the basename of the parent path
-                  image_name=$(basename "$parent_dir_path")
-                  image_tag="$current_dir_name"
+                  # This is in a subdirectory
+                  current_dir_name=$(basename "$context_dir") # e.g., vm or debian
+                  parent_dir_path=$(dirname "$context_dir") # e.g., rocky or .
+
+                  if [ "$parent_dir_path" = "." ]; then
+                      # Top-level dir (e.g., debian/Containerfile)
+                      # Image name is the dir name, tag is latest
+                      image_name=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                      image_tag="latest"
+                  else
+                      # Sub-level dir (e.g., rocky/vm/Containerfile)
+                      # Image name is parent dir, tag is current dir
+                      image_name=$(echo "$(basename "$parent_dir_path")" | tr '[:upper:]' '[:lower:]')
+                      image_tag=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                  fi
               fi
-              
-              # This is the final image name and tag (e.g., rocky:vm)
-              image_tag_local="${image_name}:${image_tag}"
               
               # This is the full URL for the registry (e.g., gitea.example.com/owner/rocky:vm)
               IMAGE_URL="${REGISTRY_BASE}/${image_name}:${image_tag}"
