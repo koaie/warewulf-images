@@ -13,7 +13,7 @@ jobs:
         uses: redhat-actions/podman-login@v1
         with:
           username: ${{ gitea.actor }}
-          password: ${{ secrets.GITEA_TOKEN }}
+          password: ${{ secrets.PASSWORD }}
           registry: ${{ vars.REPO_BASE }}
 
       - name: Find, Build, and Push All Containers
