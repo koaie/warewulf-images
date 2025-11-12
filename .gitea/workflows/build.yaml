@@ -9,18 +9,13 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set registry host environment variable
-        run: echo "REGISTRY_HOST=$(echo $GITEA_INSTANCE | sed 's|https://||;s|http://||')" >> $GITEA_ENV
-        env:
-          GITEA_INSTANCE: ${{ gitea.instance }}
-
       - name: Find, Build, and Push All Containers
         run: |
           set -e # Exit immediately if a command fails
           
           # Set the base URL for your Gitea registry
           # Gitea variables like instance_url and owner are already lowercase
-          REGISTRY_BASE="${{ env.REGISTRY_HOST }}/${{ gitea.repository_owner }}"
+          REGISTRY_BASE="${{ vars.REPO_BASE }}/${{ gitea.repository_owner }}"
           
           # Get a lowercase version of the repo name for the root case
           REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
