@@ -6,4 +6,4 @@ RUN ["dnf", "-y", "update"]
 
 # Next, run the install
 # We list all packages in a single exec form command
-RUN ["dnf", "-y", "install", "dnf-plugins-core", "epel-release", "kernel-headers", "qemu-guest-agent"]
+RUN dnf -y install --allowerasing  qemu-guest-agent

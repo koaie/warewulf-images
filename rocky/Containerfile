@@ -1,4 +1,4 @@
-FROM docker.io/rockylinux/rockylinux:10.0
+FROM docker.io/rockylinux/rockylinux:10
 
 RUN sed -i /etc/yum.repos.d/rocky*.repo \
       -e 's/^#baseurl=/baseurl=/' \
@@ -33,6 +33,10 @@ RUN dnf update -y \
       which \
       words \
       bash \
+      dnf-plugins-core \
+      kernel-headers \
+      kernel-devel-matched \
+      epel-release \
     && dnf remove -y selinux-policy \
     && dnf clean all
 
