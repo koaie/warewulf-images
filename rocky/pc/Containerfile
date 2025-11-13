@@ -12,5 +12,6 @@ RUN dnf config-manager --set-enabled crb
 #RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm
 RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
 RUN dnf -y install --allowerasing cuda-drivers gnome-desktop3 datacenter-gpu-manager-4-proprietary nvidia-driver
-
+RUN dnf -y group install "base-x"
+RUN dnf -y group install "GNOME"
 RUN dnf clean all
