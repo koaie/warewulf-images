@@ -1,0 +1,16 @@
+FROM tea.intra.kat.sh/koa/rocky:latest
+
+# First, run the update
+# We must use exec form: ["executable", "param1", "param2"]
+RUN ["dnf", "-y", "update"]
+
+RUN dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release
+RUN dnf config-manager --set-enabled crb
+# Next, run the install
+# We list all packages in a single exec form command
+#RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm
+#RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm
+RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
+RUN dnf -y install --allowerasing cuda-drivers gnome-desktop3 datacenter-gpu-manager-4-proprietary nvidia-driver
+
+RUN dnf clean all
