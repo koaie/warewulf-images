@@ -45,8 +45,6 @@ RUN chmod u+w / # https://github.com/openhpc/ohpc/issues/2061
 RUN userdel systemd-oom && \
     userdel systemd-coredump
 
-RUN systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-
 COPY excludes /etc/warewulf/
 COPY container_exit.sh /etc/warewulf/
 RUN /etc/warewulf/container_exit.sh
