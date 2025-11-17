@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	nfs-common \
 	ethtool\
 	vlan \
-	ifupdown \
+	#ifupdown \
 	linux-image-$(dpkg --print-architecture) \
 	ifmetric \
 	netbase && \
