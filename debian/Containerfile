@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	strace \
 	nfs-common \
 	ethtool\
-	vlan \
+	#vlan \
 	#ifupdown \
 	linux-image-$(dpkg --print-architecture) \
 	ifmetric \
