@@ -7,6 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	kmod \
 	systemd-sysv \
 	dbus \
+	network-manager\
+	vim \
+	nano \
+	iputils-ping \
 	openssh-client \
 	openssh-server \
 	isc-dhcp-client \
@@ -14,13 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	strace \
 	nfs-common \
 	ethtool\
+	vlan \
 	ifupdown \
 	linux-image-$(dpkg --print-architecture) \
 	ifmetric \
 	netbase && \
 	rm -rf /var/lib/apt/lists/*
 
-
+RUN echo "8021q" >> /etc/modules
 COPY excludes /etc/warewulf/
 COPY container_exit.sh /etc/warewulf/
 RUN /etc/warewulf/container_exit.sh
