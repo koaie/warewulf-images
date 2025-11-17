@@ -6,5 +6,5 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y xfce4 xfce4-goodi
 RUN apt-get install -y linux-headers-amd64 build-essential dkms
 RUN dpkg --add-architecture i386
 RUN apt-get update
-RUN apt-get install -y nvidia-driver nvidia-kernel-dkms firmware-misc-nonfree steam-installer
+RUN apt-get install -y nvidia-driver nvidia-kernel-dkms firmware-misc-nonfree
 RUN rm -rf /var/lib/apt/lists/*
