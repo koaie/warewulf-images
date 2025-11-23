@@ -1,0 +1,11 @@
+FROM tea.intra.kat.sh/koa/rocky:latest
+
+# First, run the update
+# We must use exec form: ["executable", "param1", "param2"]
+RUN ["dnf", "-y", "update"]
+
+RUN dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release
+RUN dnf config-manager --set-enabled crb
+RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
+RUN dnf -y install --allowerasing cuda-drivers datacenter-gpu-manager-4-proprietary datacenter-gpu-manager-4-core nvidia-driver-cuda
+RUN dnf clean all
