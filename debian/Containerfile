@@ -3,7 +3,7 @@ FROM debian
 
 # ----- install vital packages -----
 ENV DEBIAN_FRONTEND teletype
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends  --no-install-suggests \
 	kmod \
 	systemd-sysv \
 	dbus \
