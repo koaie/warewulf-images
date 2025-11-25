@@ -6,6 +6,10 @@ RUN sed -i /etc/yum.repos.d/rocky*.repo \
       -e 's/\$releasever/10.0/' \
     && dnf clean all
 
+RUN dnf -y update && \
+    dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release && \
+    dnf config-manager --set-enabled crb
+
 RUN dnf update -y \
     && dnf upgrade -y --allowerasing \
     && dnf install -y --setopt=install_weak_deps=False --allowerasing \
@@ -36,7 +40,6 @@ RUN dnf update -y \
       dnf-plugins-core \
       kernel-headers \
       kernel-devel-matched \
-      epel-release \
       dnf-automatic \
       Lmod \
     && dnf remove -y selinux-policy \
