@@ -38,6 +38,7 @@ RUN dnf update -y \
       kernel-devel-matched \
       epel-release \
       dnf-automatic \
+      Lmod \
     && dnf remove -y selinux-policy \
     && dnf clean all
 
