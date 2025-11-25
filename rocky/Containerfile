@@ -37,6 +37,7 @@ RUN dnf update -y \
       kernel-headers \
       kernel-devel-matched \
       epel-release \
+      dnf-automatic \
     && dnf remove -y selinux-policy \
     && dnf clean all
 
