@@ -11,8 +11,8 @@ RUN dnf config-manager --set-enabled crb
 #RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm
 #RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm
 RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
-RUN dnf -y install --allowerasing cuda-drivers datacenter-gpu-manager-4-proprietary datacenter-gpu-manager-4-core nvidia-driver
-RUN dnf -y install google-noto-sans-fonts google-noto-emoji-fonts google-noto-cjk-fonts
-RUN dnf -y group install "base-graphical"
-RUN dnf -y group install "GNOME"
+RUN dnf -y install --setopt=install_weak_deps=False --allowerasing cuda-drivers datacenter-gpu-manager-4-proprietary datacenter-gpu-manager-4-core nvidia-driver
+RUN dnf -y install --setopt=install_weak_deps=False google-noto-sans-fonts google-noto-emoji-fonts google-noto-cjk-fonts
+RUN dnf -y group install --setopt=install_weak_deps=False "base-graphical"
+RUN dnf -y group install --setopt=install_weak_deps=False "GNOME"
 RUN dnf clean all

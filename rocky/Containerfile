@@ -8,7 +8,7 @@ RUN sed -i /etc/yum.repos.d/rocky*.repo \
 
 RUN dnf update -y \
     && dnf upgrade -y --allowerasing \
-    && dnf install -y --allowerasing \
+    && dnf install -y --setopt=install_weak_deps=False --allowerasing \
       coreutils \
       cpio \
       e2fsprogs \
