@@ -11,39 +11,53 @@ RUN dnf -y update && \
     dnf config-manager --set-enabled crb
 
 RUN dnf update -y \
-    && dnf upgrade -y --allowerasing \
-    && dnf install -y --setopt=install_weak_deps=False --allowerasing \
-      coreutils \
-      cpio \
-      e2fsprogs \
-      ethtool \
-      findutils \
-      initscripts \
-      ipmitool \
-      iproute \
-      kernel-core \
-      kernel-modules \
-      net-tools \
-      NetworkManager \
-      nfs-utils \
-      openssh-clients \
-      openssh-server \
-      pciutils \
-      psmisc \
-      rsync \
-      rsyslog \
-      strace \
-      wget \
-      which \
-      words \
-      bash \
-      dnf-plugins-core \
-      kernel-headers \
-      kernel-devel-matched \
-      dnf-automatic \
-      Lmod \
-    && dnf remove -y selinux-policy \
-    && dnf clean all
+    && dnf upgrade -y --allowerasing
+
+# Install kernel
+RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	kernel-core	\
+	kernel-modules	\
+	kernel-headers	\
+	kernel-devel-matched
+
+# Install core tools/utils
+RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	coreutils	\
+	cpio		\
+#       ╰─| used by initramfs
+	ethtool		\
+	findutils	\
+#       ╰─| Xargs
+	e2fsprogs	\
+#	╰─| Needed for filesystems
+	initscripts	\
+	iproute		\
+	net-tools	\
+#       ╰─| arp
+	NetworkManager	\
+	nfs-utils	\
+	pciutils	\
+	psmisc		\
+	rsyslog		\
+	strace		\
+	bash		
+
+# Install feature depnencies
+RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+        openssh-clients \
+        openssh-server  \
+	Lmod
+
+# install QOL tools
+RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	wget	\
+	which	\
+	curl	\
+	words	\
+	rsync
+
+RUN dnf install  -y --setopt=install_weak_deps=False --allowerasing dnf-plugins-core dnf-automatic \
+	&& dnf clean all
 
 RUN systemctl enable dnf-automatic.timer
 
