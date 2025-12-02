@@ -23,8 +23,6 @@ RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
 # Install core tools/utils
 RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
 	coreutils	\
-	cpio		\
-#       ╰─| used by initramfs
 	ethtool		\
 	findutils	\
 #       ╰─| Xargs
