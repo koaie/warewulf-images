@@ -26,13 +26,14 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 	openssl \
 	firefox \
 	git \
-	steam-devices
 
 # xpad
 RUN dnf -y install --setopt=install_weak_deps=False \
 	kernel-devel \
 	kernel-headers \
-	kmod
+	kmod \
+	joystick \
+	steam-devices
 
 RUN git clone https://github.com/paroj/xpad.git /usr/src/xpad-0.4
 RUN dkms install -m xpad -v 0.4 --kernelsourcedir /lib/modules/$(dnf repoquery --installed -q --latest-limit=1 kernel-core --queryformat "%{version}-%{release}.%{arch}")/build 
