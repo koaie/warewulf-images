@@ -23,12 +23,23 @@ RUN dnf -y group install --setopt=install_weak_deps=False "GNOME"
 
 # qol
 RUN dnf -y install --setopt=install_weak_deps=False \
-	joystick \
 	openssl \
 	firefox \
 	git \
-	kernel-modules-extra \
 	steam-devices
+
+# xpad
+RUN dnf -y install --setopt=install_weak_deps=False \
+	kernel-devel \
+	kernel-headers \
+	kmod
+
+RUN git clone https://github.com/paroj/xpad.git /usr/src/xpad-0.4
+RUN dkms install -m xpad -v 0.4
+
+RUN echo xpad > /etc/modules-load.d/xpad.conf
+
+	
 
 # Setup dracut
 RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
