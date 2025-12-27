@@ -1,18 +1,30 @@
 FROM tea.intra.kat.sh/koa/rocky:latest
 
-# First, run the update
-# We must use exec form: ["executable", "param1", "param2"]
-RUN ["dnf", "-y", "update"]
+# install config manager and setup epel
+RUN dnf -y update && \
+	dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release && \
+	dnf config-manager --set-enabled crb
 
-RUN dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release
-RUN dnf config-manager --set-enabled crb
-# Next, run the install
-# We list all packages in a single exec form command
-#RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm
-#RUN dnf config-manager --add-repo https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-10.noarch.rpm
+# gpu drivers
 RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
-RUN dnf -y install --setopt=install_weak_deps=False --allowerasing cuda-drivers datacenter-gpu-manager-4-proprietary datacenter-gpu-manager-4-core nvidia-driver
-RUN dnf -y install --setopt=install_weak_deps=False google-noto-sans-fonts google-noto-emoji-fonts google-noto-cjk-fonts
+RUN dnf -y install --setopt=install_weak_deps=False --allowerasing \
+	cuda-drivers \
+	datacenter-gpu-manager-4-proprietary \
+	datacenter-gpu-manager-4-core \
+	nvidia-driver
+
+# Gnome
+RUN dnf -y install --setopt=install_weak_deps=False \
+	google-noto-sans-fonts \
+	google-noto-emoji-fonts \
+	google-noto-cjk-fonts
 RUN dnf -y group install --setopt=install_weak_deps=False "base-graphical"
 RUN dnf -y group install --setopt=install_weak_deps=False "GNOME"
+
+# Setup dracut
+RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
+RUN dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.4/warewulf-dracut-4.6.4-1.el10.noarch.rpm
+RUN echo 'install_items+=" /usr/sbin/sgdisk "' > /etc/dracut.conf.d/ignition-extras.conf
+RUN dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
 RUN dnf clean all
