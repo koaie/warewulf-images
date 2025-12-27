@@ -23,7 +23,7 @@ RUN dnf -y group install --setopt=install_weak_deps=False "GNOME"
 
 # qol
 RUN dnf -y install --setopt=install_weak_deps=False \
-	kernel-devel \
+	openssl \
 	firefox \
 	git
 
