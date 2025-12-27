@@ -5,6 +5,10 @@ RUN dnf -y update && \
 	dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release && \
 	dnf config-manager --set-enabled crb
 
+RUN sed -i 's/installonly_limit=3/installonly_limit=1/g' /etc/dnf/dnf.conf
+RUN dnf -y autoremove
+
+
 # gpu drivers
 RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
 RUN dnf -y install --setopt=install_weak_deps=False --allowerasing \
