@@ -3,6 +3,6 @@ FROM tea.intra.kat.sh/koa/debian:latest
 RUN sed -i 's/Components: main/Components: main non-free-firmware contrib non-free/g' /etc/apt/sources.list.d/debian.sources
 RUN cat /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends --no-install-suggests xfce4 xfce4-goodies 
-RUN apt-get install -y --no-install-recommends --no-install-suggests linux-headers-amd64 build-essential dkms
+RUN apt-get install -y --no-install-recommends --no-install-suggests linux-headers-amd64 build-essential openssl dkms
 RUN apt-get install -y --no-install-recommends --no-install-suggests nvidia-driver nvidia-kernel-dkms firmware-misc-nonfree
 RUN rm -rf /var/lib/apt/lists/*
