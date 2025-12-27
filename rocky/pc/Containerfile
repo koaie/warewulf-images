@@ -35,7 +35,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 	kmod
 
 RUN git clone https://github.com/paroj/xpad.git /usr/src/xpad-0.4
-RUN dkms install -m xpad -v 0.4
+RUN dkms install -m xpad -v 0.4 --kernelsourcedir /lib/modules/$(dnf repoquery -q --latest-limit=1 kernel-core --queryformat "%{version}-%{release}.%{arch}")/build 
 
 RUN echo xpad > /etc/modules-load.d/xpad.conf
 
