@@ -27,7 +27,8 @@ RUN dnf -y install --setopt=install_weak_deps=False \
 	openssl \
 	firefox \
 	git \
-	kernel-modules-extra
+	kernel-modules-extra \
+	steam-devices
 
 # Setup dracut
 RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
