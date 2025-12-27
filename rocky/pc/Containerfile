@@ -25,11 +25,8 @@ RUN dnf -y group install --setopt=install_weak_deps=False "GNOME"
 RUN dnf -y install --setopt=install_weak_deps=False \
 	openssl \
 	firefox \
-	git
-
-# xpad - controllers
-RUN git clone https://github.com/paroj/xpad.git /usr/src/xpad-0.4
-RUN dkms install -m xpad -v 0.4
+	git \
+	kernel-modules-extra
 
 # Setup dracut
 RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
