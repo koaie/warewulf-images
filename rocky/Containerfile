@@ -32,10 +32,8 @@ RUN dnf -y update && dnf -y upgrade && \
 	which	\
 	curl	\
 	rsync	\
-	dnf-plugins-core dnf-automatic \
+	dnf-plugins-core \
 	&& dnf clean all
-
-RUN systemctl enable dnf-automatic.timer
 
 RUN chmod u+w / # https://github.com/openhpc/ohpc/issues/2061
 # remove unused dynamic system user
