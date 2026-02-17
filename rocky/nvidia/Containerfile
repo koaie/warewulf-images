@@ -13,7 +13,9 @@ RUN dnf -y update && \
     openssl \
     make && \
     \
-    dkms autoinstall -k $(rpm -qa kernel-core | sort -Vr | head -n 1 | cut -d- -f3-) && \
+    KERNEL_VER=$(rpm -qa kernel-core | sort -Vr | head -n 1 | cut -d- -f3-) && \
+    dkms autoinstall -k ${KERNEL_VER} && \
+    depmod -a $KERNEL_VER && \
     \
     rpm -e --nodeps \
     kernel-devel-matched \
