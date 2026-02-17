@@ -14,6 +14,15 @@ on:
         options:
           - 'full'
           - 'incremental'
+      image_type:
+        description: 'Limit build to specific image type'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'debian'
+          - 'rocky'
 
 jobs:
   full-rebuild:
@@ -43,57 +52,120 @@ jobs:
           REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
           
           echo "Registry base URL: $REGISTRY_BASE"
-          
-          # Find all files named 'Containerfile' and loop through them
-          find . -name Containerfile | awk -F/ '{ print NF, $0 }' | sort -n | cut -d' ' -f2- | while read -r cfile; do
-              # Remove the leading './' for cleaner names
-              cfile_clean=$(echo "$cfile" | sed 's|^\./||') # e.g., rocky/vm/Containerfile
-              
-              # Get the directory of the Containerfile (this is the build context)
-              context_dir=$(dirname "$cfile_clean") # e.g., rocky/vm or .
-              
-              image_name=""
-              image_tag=""
 
-              # Check if this is the root Containerfile
-              if [ "$context_dir" = "." ]; then
-                  image_name="$REPO_NAME_LOWER"
-                  image_tag="latest"
-              else
-                  # This is in a subdirectory
-                  current_dir_name=$(basename "$context_dir") # e.g., vm or debian
-                  parent_dir_path=$(dirname "$context_dir") # e.g., rocky or .
+          # Determine the base path filter
+          BUILD_PATH_FILTER=""
+          if [[ "${{ github.event.inputs.image_type }}" == "debian" ]]; then
+              BUILD_PATH_FILTER="./debian"
+          elif [[ "${{ github.event.inputs.image_type }}" == "rocky" ]]; then
+              BUILD_PATH_FILTER="./rocky"
+          fi
 
-                  if [ "$parent_dir_path" = "." ]; then
-                      # Top-level dir (e.g., debian/Containerfile)
-                      # Image name is the dir name, tag is latest
-                      image_name=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+          if [[ -n "$BUILD_PATH_FILTER" ]]; then
+              echo "Filtering builds to: $BUILD_PATH_FILTER"
+              # Find all files named 'Containerfile' and loop through them, filtered by path
+              find "$BUILD_PATH_FILTER" -name Containerfile | awk -F/ '{ print NF, $0 }' | sort -n | cut -d' ' -f2- | while read -r cfile; do
+                  # Remove the leading './' for cleaner names
+                  cfile_clean=$(echo "$cfile" | sed 's|^\./||') # e.g., rocky/vm/Containerfile
+                  
+                  # Get the directory of the Containerfile (this is the build context)
+                  context_dir=$(dirname "$cfile_clean") # e.g., rocky/vm or .
+                  
+                  image_name=""
+                  image_tag=""
+
+                  # Check if this is the root Containerfile
+                  if [ "$context_dir" = "." ]; then
+                      image_name="$REPO_NAME_LOWER"
                       image_tag="latest"
                   else
-                      # Sub-level dir (e.g., rocky/vm/Containerfile)
-                      # Image name is parent dir, tag is current dir
-                      image_name=$(echo "$(basename "$parent_dir_path")" | tr '[:upper:]' '[:lower:]')
-                      image_tag=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                      # This is in a subdirectory
+                      current_dir_name=$(basename "$context_dir") # e.g., vm or debian
+                      parent_dir_path=$(dirname "$context_dir") # e.g., rocky or .
+
+                      if [ "$parent_dir_path" = "." ]; then
+                          # Top-level dir (e.g., debian/Containerfile)
+                          # Image name is the dir name, tag is latest
+                          image_name=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                          image_tag="latest"
+                      else
+                          # Sub-level dir (e.g., rocky/vm/Containerfile)
+                          # Image name is parent dir, tag is current dir
+                          image_name=$(echo "$(basename "$parent_dir_path")" | tr '[:upper:]' '[:lower:]')
+                          image_tag=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                      fi
                   fi
-              fi
-              
-              # This is the full URL for the registry (e.g., gitea.example.com/owner/rocky:vm)
-              IMAGE_URL="${REGISTRY_BASE}/${image_name}:${image_tag}"
-              echo ""
-              echo "================================================="
-              echo "Found:      $cfile_clean"
-              echo "Context:    $context_dir"
-              echo "Building:   $IMAGE_URL"
-              echo "================================================="
-              
-              # Build the image and tag it with the full registry URL
-              podman build --no-cache -t "$IMAGE_URL" -f "$cfile_clean" "$context_dir"
-              
-              echo "Pushing $IMAGE_URL"
-              podman push "$IMAGE_URL"
-              echo "================================================="
-              echo ""
-          done
+                  
+                  # This is the full URL for the registry (e.g., gitea.example.com/owner/rocky:vm)
+                  IMAGE_URL="${REGISTRY_BASE}/${image_name}:${image_tag}"
+                  echo ""
+                  echo "================================================="
+                  echo "Found:      $cfile_clean"
+                  echo "Context:    $context_dir"
+                  echo "Building:   $IMAGE_URL"
+                  echo "================================================="
+                  
+                  # Build the image and tag it with the full registry URL
+                  podman build --no-cache -t "$IMAGE_URL" -f "$cfile_clean" "$context_dir"
+                  
+                  echo "Pushing $IMAGE_URL"
+                  podman push "$IMAGE_URL"
+                  echo "================================================="
+                  echo ""
+              done
+          else
+              echo "Building all image types."
+              # Find all files named 'Containerfile' and loop through them (no filter)
+              find . -name Containerfile | awk -F/ '{ print NF, $0 }' | sort -n | cut -d' ' -f2- | while read -r cfile; do
+                  # Remove the leading './' for cleaner names
+                  cfile_clean=$(echo "$cfile" | sed 's|^\./||') # e.g., rocky/vm/Containerfile
+                  
+                  # Get the directory of the Containerfile (this is the build context)
+                  context_dir=$(dirname "$cfile_clean") # e.g., rocky/vm or .
+                  
+                  image_name=""
+                  image_tag=""
+
+                  # Check if this is the root Containerfile
+                  if [ "$context_dir" = "." ]; then
+                      image_name="$REPO_NAME_LOWER"
+                      image_tag="latest"
+                  else
+                      # This is in a subdirectory
+                      current_dir_name=$(basename "$context_dir") # e.g., vm or debian
+                      parent_dir_path=$(dirname "$context_dir") # e.g., rocky or .
+
+                      if [ "$parent_dir_path" = "." ]; then
+                          # Top-level dir (e.g., debian/Containerfile)
+                          # Image name is the dir name, tag is latest
+                          image_name=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                          image_tag="latest"
+                      else
+                          # Sub-level dir (e.g., rocky/vm/Containerfile)
+                          # Image name is parent dir, tag is current dir
+                          image_name=$(echo "$(basename "$parent_dir_path")" | tr '[:upper:]' '[:lower:]')
+                          image_tag=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                      fi
+                  fi
+                  
+                  # This is the full URL for the registry (e.g., gitea.example.com/owner/rocky:vm)
+                  IMAGE_URL="${REGISTRY_BASE}/${image_name}:${image_tag}"
+                  echo ""
+                  echo "================================================="
+                  echo "Found:      $cfile_clean"
+                  echo "Context:    $context_dir"
+                  echo "Building:   $IMAGE_URL"
+                  echo "================================================="
+                  
+                  # Build the image and tag it with the full registry URL
+                  podman build --no-cache -t "$IMAGE_URL" -f "$cfile_clean" "$context_dir"
+                  
+                  echo "Pushing $IMAGE_URL"
+                  podman push "$IMAGE_URL"
+                  echo "================================================="
+                  echo ""
+              done
+          fi
           
           echo "All builds complete."
 
