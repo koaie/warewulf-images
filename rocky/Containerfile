@@ -4,16 +4,11 @@ RUN dnf -y update && \
     dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release && \
     dnf config-manager --set-enabled crb
 
-RUN dnf update -y \
-    && dnf upgrade -y --allowerasing
-
 # Install kernel
-RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+RUN dnf -y update && dnf -y upgrade && \
+	dnf install -y --setopt=install_weak_deps=False --allowerasing \
 	kernel-core	\
-	kernel-modules
-
-# Install core tools/utils
-RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	kernel-modules \
 	coreutils	\
 	ethtool		\
 	findutils	\
@@ -30,21 +25,14 @@ RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
 	psmisc		\
 	rsyslog		\
 	strace		\
-	bash		
-
-# Install feature depnencies
-RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	bash		\
     openssh-clients \
     openssh-server  \
-	Lmod
-
-# install QOL tools
-RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
+	Lmod		\
 	which	\
 	curl	\
-	rsync
-
-RUN dnf install  -y --setopt=install_weak_deps=False --allowerasing dnf-plugins-core dnf-automatic \
+	rsync	\
+	dnf-plugins-core dnf-automatic \
 	&& dnf clean all
 
 RUN systemctl enable dnf-automatic.timer
