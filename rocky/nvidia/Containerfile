@@ -22,4 +22,7 @@ RUN dnf -y update && \
     make && \
     \
     rpm -e --nodeps && \ 
+    rm -rf /usr/src/nvidia-* && \
+    rm -rf /var/lib/dkms/*/*/build && \
+    rm -rf /var/lib/dkms/*/*/source && \
     dnf clean all
