@@ -45,7 +45,7 @@ RUN echo xpad > /etc/modules-load.d/xpad.conf
 
 # Setup dracut
 RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
-RUN dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-4.6.5-1.el10.x86_64.rpm
+RUN dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-dracut-4.6.5-1.el10.noarch.rpm
 RUN echo 'install_items+=" /usr/sbin/sgdisk "' > /etc/dracut.conf.d/ignition-extras.conf
 RUN dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
 
