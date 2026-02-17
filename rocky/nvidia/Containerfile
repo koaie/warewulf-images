@@ -15,14 +15,14 @@ RUN dnf -y update && \
     \
     dkms autoinstall -k $(rpm -qa kernel-core | sort -Vr | head -n 1 | cut -d- -f3-) && \
     \
-    dnf remove -y \
+    rpm -e --nodeps \
     kernel-devel-matched \
     kernel-headers \
     gcc \
     make && \
     \
-    rpm -e --nodeps && \ 
     rm -rf /usr/src/nvidia-* && \
+    rm -rf /usr/src/kernels && \
     rm -rf /var/lib/dkms/*/*/build && \
     rm -rf /var/lib/dkms/*/*/source && \
     dnf clean all
