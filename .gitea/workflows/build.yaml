@@ -119,7 +119,16 @@ jobs:
           REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
           echo "Registry base URL: $REGISTRY_BASE"
 
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          # Determine changed files based on whether HEAD^ exists
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+              echo "Changes detected since previous commit (HEAD^):"
+          else
+              # First commit, consider all files as changed
+              CHANGED_FILES=$(git ls-tree -r HEAD --name-only)
+              echo "This is the first commit. All tracked files considered changed."
+          fi
+          
           echo "Changed files: $CHANGED_FILES"
 
           declare -A build_contexts
