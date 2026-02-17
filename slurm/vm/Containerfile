@@ -1,12 +1,4 @@
 FROM tea.intra.kat.sh/koa/rocky:vm
 
-RUN dnf -y update && \
-    dnf -y config-manager --set-enabled powertools && \
-    dnf -y install --allowerasing \
-    munge       \
-    && dnf clean all
-
-RUN export MUNGEUSER=1001 && \
-    groupadd -g $MUNGEUSER munge && \
-    useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge \ 
-    -u $MUNGEUSER -g munge -s /sbin/nologin munge
+COPY --chmod=0755 ../munge-setup.sh /tmp/munge-setup.sh
+RUN /tmp/munge-setup.sh && rm /tmp/munge-setup.sh
