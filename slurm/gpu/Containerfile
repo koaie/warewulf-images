@@ -1,0 +1,10 @@
+FROM tea.intra.kat.sh/koa/rocky:nvidia
+
+RUN dnf -y update && config-manager --set-enabled powertools && dnf -y install --allowerasing \
+    munge       \
+    && dnf clean all
+
+RUN export MUNGEUSER=1001 && \
+    groupadd -g $MUNGEUSER munge && \
+    useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge \ 
+    -u $MUNGEUSER -g munge -s /sbin/nologin munge

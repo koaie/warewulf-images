@@ -23,6 +23,7 @@ on:
           - 'all'
           - 'debian'
           - 'rocky'
+          - 'slurm'
 
 jobs:
   full-rebuild:
