@@ -10,6 +10,7 @@ RUN dnf -y update && \
     kernel-headers	\
 	kernel-devel-matched \
     gcc \
+    openssl \
     make && \
     \
     dkms autoinstall -k $(rpm -qa kernel-core | sort -Vr | head -n 1 | cut -d- -f3-) && \

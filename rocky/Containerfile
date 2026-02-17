@@ -12,13 +12,13 @@ RUN dnf -y update && dnf -y upgrade && \
 	coreutils	\
 	ethtool		\
 	findutils	\
-#       ╰─| Xargs
+#   ╰─| Xargs
 	e2fsprogs	\
 #	╰─| Needed for filesystems
 	initscripts	\
 	iproute		\
 	net-tools	\
-#       ╰─| arp
+#   ╰─| arp
 	NetworkManager	\
 	nfs-utils	\
 	pciutils	\
