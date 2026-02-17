@@ -10,13 +10,18 @@ RUN dnf -y update && dnf -y install --allowerasing \
     gcc-c++ \
     tar \
     make \
+    perl \
     lbzip2 \
+    bzip2 \
     python3 \
     openssl \
     openssl-devel \
     pam-devel \
+    autoconf \
+    automake \
     numactl \
     numactl-devel \
+    rpm-build \
     hwloc \
     hwloc-devel \
     lua \
@@ -29,7 +34,9 @@ RUN dnf -y update && dnf -y install --allowerasing \
     libibumad \
     libevent \
     libevent-devel \
-    munge &&  \
+    munge  \
+    munge-libs      \
+    munge-devel && \
     dnf clean all
 
 RUN mkdir -p /etc/munge /var/log/munge /var/lib/munge /run/munge
