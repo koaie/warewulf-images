@@ -41,7 +41,6 @@ RUN dkms install -m xpad -v 0.4 -k $(dnf repoquery --installed -q --latest-limit
 
 RUN echo xpad > /etc/modules-load.d/xpad.conf
 
-	
 
 # Setup dracut
 RUN dnf -y install --setopt=install_weak_deps=False ignition gdisk
