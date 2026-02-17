@@ -1,10 +1,22 @@
 FROM tea.intra.kat.sh/koa/rocky:latest
 
-# First, run the update
-# We must use exec form: ["executable", "param1", "param2"]
-RUN ["dnf", "-y", "update"]
+# for dkms build
+RUN dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
+	kernel-headers	\
+	kernel-devel-matched \
+    gcc \
+    make
 
 RUN dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
 RUN dnf -y install --allowerasing --setopt=install_weak_deps=False datacenter-gpu-manager-4-proprietary datacenter-gpu-manager-4-core nvidia-driver-cuda
 RUN dnf -y install --allowerasing --setopt=install_weak_deps=False nvtop
+
+RUN dkms autoinstall -k $(dnf repoquery --installed -q --latest-limit=1 kernel-core --queryformat "%{version}-%{release}.%{arch}")
+
+RUN dnf remove -y \
+    kernel-devel-matched \
+    kernel-headers \
+    gcc \
+    make
+
 RUN dnf clean all

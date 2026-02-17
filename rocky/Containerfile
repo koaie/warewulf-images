@@ -1,11 +1,5 @@
 FROM docker.io/rockylinux/rockylinux:10
 
-# RUN sed -i /etc/yum.repos.d/rocky*.repo \
-#      -e 's/^#baseurl=/baseurl=/' \
-#      -e 's/^mirrorlist=/#mirrorlist=/' \
-#      -e 's/\$releasever/10.0/' \
-#    && dnf clean all
-
 RUN dnf -y update && \
     dnf -y install --allowerasing 'dnf-command(config-manager)' epel-release && \
     dnf config-manager --set-enabled crb
@@ -16,9 +10,7 @@ RUN dnf update -y \
 # Install kernel
 RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
 	kernel-core	\
-	kernel-modules	\
-	kernel-headers	\
-	kernel-devel-matched
+	kernel-modules
 
 # Install core tools/utils
 RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
@@ -42,16 +34,14 @@ RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
 
 # Install feature depnencies
 RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
-        openssh-clients \
-        openssh-server  \
+    openssh-clients \
+    openssh-server  \
 	Lmod
 
 # install QOL tools
 RUN dnf install -y --setopt=install_weak_deps=False --allowerasing \
-	wget	\
 	which	\
 	curl	\
-	words	\
 	rsync
 
 RUN dnf install  -y --setopt=install_weak_deps=False --allowerasing dnf-plugins-core dnf-automatic \
