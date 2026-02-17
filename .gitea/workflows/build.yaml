@@ -87,7 +87,7 @@ jobs:
               echo "================================================="
               
               # Build the image and tag it with the full registry URL
-              podman build -t "$IMAGE_URL" -f "$cfile_clean" "$context_dir"
+              podman build --no-cache -t "$IMAGE_URL" -f "$cfile_clean" "$context_dir"
               
               echo "Pushing $IMAGE_URL"
               podman push "$IMAGE_URL"
@@ -129,25 +129,47 @@ jobs:
               echo "This is the first commit. All tracked files considered changed."
           fi
           
-          echo "Changed files: $CHANGED_FILES"
+          echo "Raw changed files: $CHANGED_FILES"
+
+          # Create a list of unique directories affected by changes
+          # This includes the directories containing the changed files and their parent directories
+          declare -A affected_dirs_set
+          for changed_file in $CHANGED_FILES; do
+              dir_to_check=$(dirname "$changed_file")
+              while [[ -n "$dir_to_check" && "$dir_to_check" != "." ]]; do
+                  affected_dirs_set["$dir_to_check"]=1
+                  dir_to_check=$(dirname "$dir_to_check")
+              done
+              # The root directory '.' can also be affected
+              affected_dirs_set["."]=1
+          done
+
+          echo "Affected directories: ${!affected_dirs_set[@]}"
 
           declare -A build_contexts
           for cfile in $(find . -name Containerfile); do
               cfile_clean=$(echo "$cfile" | sed 's|^\./||')
               context_dir=$(dirname "$cfile_clean")
               
-              # Check if the Containerfile itself has changed
+              # Check if the Containerfile itself has changed (direct hit)
               if echo "$CHANGED_FILES" | grep -q "^$cfile_clean$"; then
                   build_contexts["$context_dir"]="$cfile_clean"
+                  echo "Queuing $cfile_clean because the Containerfile itself changed."
                   continue
               fi
-              
-              # Check if any file in the context_dir has changed
-              for changed_file in $CHANGED_FILES; do
-                  if [[ "$changed_file" == "$context_dir"* ]]; then
+
+              # Check if the context_dir or any of its parent directories are affected
+              dir_current="$context_dir"
+              while [[ -n "$dir_current" ]]; do
+                  if [[ -n "${affected_dirs_set["$dir_current"]}" ]]; then
                       build_contexts["$context_dir"]="$cfile_clean"
+                      echo "Queuing $cfile_clean because directory $dir_current (an ancestor of $context_dir) is affected."
                       break
                   fi
+                  if [[ "$dir_current" == "." ]]; then
+                    break # Avoid infinite loop for root directory
+                  fi
+                  dir_current=$(dirname "$dir_current")
               done
           done
 
@@ -195,7 +217,7 @@ jobs:
               echo "Building:   $IMAGE_URL"
               echo "================================================="
               
-              podman build -t "$IMAGE_URL" -f "$cfile_clean" "$sorted_context_dir"
+              podman build --no-cache -t "$IMAGE_URL" -f "$cfile_clean" "$sorted_context_dir"
               
               echo "Pushing $IMAGE_URL"
               podman push "$IMAGE_URL"
