@@ -6,6 +6,29 @@ RUN export MUNGEUSER=1001 && \
         -u $MUNGEUSER -g munge -s /sbin/nologin munge
 
 RUN dnf -y update && dnf -y install --allowerasing \
+    gcc \
+    gcc-c++ \
+    tar \
+    make \
+    lbzip2 \
+    python3 \
+    openssl \
+    openssl-devel \
+    pam-devel \
+    numactl \
+    numactl-devel \
+    hwloc \
+    hwloc-devel \
+    lua \
+    lua-devel \
+    readline-devel \
+    rrdtool-devel \
+    ncurses-devel \
+    man2html \
+    libibmad \
+    libibumad \
+    libevent \
+    libevent-devel \
     munge &&  \
     dnf clean all
 
@@ -13,3 +36,5 @@ RUN mkdir -p /etc/munge /var/log/munge /var/lib/munge /run/munge
 RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \
     chmod 0700 /etc/munge/ /var/log/munge/ /var/lib/munge/ && \
     chmod 0711 /run/munge/
+
+RUN systemctl enable munge
