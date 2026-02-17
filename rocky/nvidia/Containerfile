@@ -21,4 +21,5 @@ RUN dnf -y update && \
     gcc \
     make && \
     \
+    rpm -e --nodeps && \ 
     dnf clean all
