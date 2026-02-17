@@ -1,9 +1,23 @@
 name: Build warewulf images
 run-name: ${{ gitea.actor }} Building warewulf images
-on: [push]
+on:
+  push:
+    branches:
+      - main # Assuming 'main' is the default branch
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Type of build to perform'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - 'full'
+          - 'incremental'
 
 jobs:
-  build-warewulf-images:
+  full-rebuild:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'full'
     runs-on: carp
     steps:
       - name: Check out repository code
@@ -82,3 +96,102 @@ jobs:
           done
           
           echo "All builds complete."
+
+  incremental-build:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'incremental')
+    runs-on: carp
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Log in to continer registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.PASSWORD }}
+          registry: ${{ vars.REPO_BASE }}
+          auth_file_path: /run/user/1000/containers/auth.json
+
+      - name: Incremental Build and Push Containers
+        run: |
+          set -e
+          REGISTRY_BASE="${{ vars.REPO_BASE }}/${{ gitea.repository_owner }}"
+          REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
+          echo "Registry base URL: $REGISTRY_BASE"
+
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "Changed files: $CHANGED_FILES"
+
+          declare -A build_contexts
+          for cfile in $(find . -name Containerfile); do
+              cfile_clean=$(echo "$cfile" | sed 's|^\./||')
+              context_dir=$(dirname "$cfile_clean")
+              
+              # Check if the Containerfile itself has changed
+              if echo "$CHANGED_FILES" | grep -q "^$cfile_clean$"; then
+                  build_contexts["$context_dir"]="$cfile_clean"
+                  continue
+              fi
+              
+              # Check if any file in the context_dir has changed
+              for changed_file in $CHANGED_FILES; do
+                  if [[ "$changed_file" == "$context_dir"* ]]; then
+                      build_contexts["$context_dir"]="$cfile_clean"
+                      break
+                  fi
+              done
+          done
+
+          if [ ${#build_contexts[@]} -eq 0 ]; then
+              echo "No relevant Containerfiles or their contexts changed. Skipping incremental build."
+              exit 0
+          fi
+
+          for context_dir in "${!build_contexts[@]}"; do
+              echo "$context_dir"
+          done | awk -F/ '{ print NF, $0 }' | sort -n | cut -d' ' -f2- | while read -r sorted_context_dir; do
+              cfile_clean=${build_contexts["$sorted_context_dir"]}
+              if [ -z "$cfile_clean" ]; then
+                  cfile_clean=$(find "$sorted_context_dir" -name Containerfile -print -quit | sed 's|^\./||')
+                  if [ -z "$cfile_clean" ]; then
+                      echo "Warning: Containerfile not found for context $sorted_context_dir. Skipping."
+                      continue
+                  fi
+              fi
+
+              image_name=""
+              image_tag=""
+
+              if [ "$sorted_context_dir" = "." ]; then
+                  image_name="$REPO_NAME_LOWER"
+                  image_tag="latest"
+              else
+                  current_dir_name=$(basename "$sorted_context_dir")
+                  parent_dir_path=$(dirname "$sorted_context_dir")
+
+                  if [ "$parent_dir_path" = "." ]; then
+                      image_name=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                      image_tag="latest"
+                  else
+                      image_name=$(echo "$(basename "$parent_dir_path")" | tr '[:upper:]' '[:lower:]')
+                      image_tag=$(echo "$current_dir_name" | tr '[:upper:]' '[:lower:]')
+                  fi
+              fi
+              
+              IMAGE_URL="${REGISTRY_BASE}/${image_name}:${image_tag}"
+              echo ""
+              echo "================================================="
+              echo "Found:      $cfile_clean (due to changes in $sorted_context_dir or its Containerfile)"
+              echo "Context:    $sorted_context_dir"
+              echo "Building:   $IMAGE_URL"
+              echo "================================================="
+              
+              podman build -t "$IMAGE_URL" -f "$cfile_clean" "$sorted_context_dir"
+              
+              echo "Pushing $IMAGE_URL"
+              podman push "$IMAGE_URL"
+              echo "================================================="
+              echo ""
+          done
+          
+          echo "Incremental builds complete."
