@@ -55,10 +55,10 @@ jobs:
 
           # Determine the base path filter
           BUILD_PATH_FILTER=""
-          if [[ "${{ github.event.inputs.image_type }}" == "debian" ]]; then
-              BUILD_PATH_FILTER="./debian"
-          elif [[ "${{ github.event.inputs.image_type }}" == "rocky" ]]; then
-              BUILD_PATH_FILTER="./rocky"
+          if [[ -n "${{ github.event.inputs.build_path }}" ]]; then
+              BUILD_PATH_FILTER="./${{ github.event.inputs.build_path }}"
+          elif [[ "${{ github.event.inputs.image_type }}" != "all" ]]; then
+              BUILD_PATH_FILTER="./${{ github.event.inputs.image_type }}"
           fi
 
           if [[ -n "$BUILD_PATH_FILTER" ]]; then
@@ -191,63 +191,78 @@ jobs:
           REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
           echo "Registry base URL: $REGISTRY_BASE"
 
-          # Determine changed files based on the push event
-          if [ "${{ gitea.before }}" = "0000000000000000000000000000000000000000" ]; then
-              # First push to a new branch, list all files
-              CHANGED_FILES=$(git ls-tree -r ${{ gitea.after }} --name-only)
-              echo "This is the first push. All tracked files considered changed."
-          else
-              # Compare the commit before and after the push
-              CHANGED_FILES=$(git diff --name-only ${{ gitea.before }} ${{ gitea.after }})
-              echo "Changes detected between ${{ gitea.before }} and ${{ gitea.after }}:"
-          fi
-          
-          echo "Raw changed files: $CHANGED_FILES"
-
-          # Create a list of unique directories affected by changes
-          # This includes the directories containing the changed files and their parent directories
-          declare -A affected_dirs_set
-          for changed_file in $CHANGED_FILES; do
-              dir_to_check=$(dirname "$changed_file")
-              while [[ -n "$dir_to_check" && "$dir_to_check" != "." ]]; do
-                  affected_dirs_set["$dir_to_check"]=1
-                  dir_to_check=$(dirname "$dir_to_check")
-              done
-              # The root directory '.' can also be affected
-              affected_dirs_set["."]=1
-          done
-
-          echo "Affected directories: ${!affected_dirs_set[@]}"
-
           declare -A build_contexts
-          for cfile in $(find . -name Containerfile); do
-              cfile_clean=$(echo "$cfile" | sed 's|^\./||')
-              context_dir=$(dirname "$cfile_clean")
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "Manual incremental build triggered."
               
-              # Check if the Containerfile itself has changed (direct hit)
-              if echo "$CHANGED_FILES" | grep -q "^$cfile_clean$"; then
-                  build_contexts["$context_dir"]="$cfile_clean"
-                  echo "Queuing $cfile_clean because the Containerfile itself changed."
-                  continue
+              BUILD_PATH_FILTER="."
+              if [[ -n "${{ github.event.inputs.build_path }}" ]]; then
+                  BUILD_PATH_FILTER="./${{ github.event.inputs.build_path }}"
+              elif [[ "${{ github.event.inputs.image_type }}" != "all" ]]; then
+                  BUILD_PATH_FILTER="./${{ github.event.inputs.image_type }}"
               fi
 
-              # Check if the context_dir or any of its parent directories are affected
-              dir_current="$context_dir"
-              while [[ -n "$dir_current" ]]; do
-                  if [[ -n "${affected_dirs_set["$dir_current"]}" ]]; then
-                      build_contexts["$context_dir"]="$cfile_clean"
-                      echo "Queuing $cfile_clean because directory $dir_current (an ancestor of $context_dir) is affected."
-                      break
-                  fi
-                  if [[ "$dir_current" == "." ]]; then
-                    break # Avoid infinite loop for root directory
-                  fi
-                  dir_current=$(dirname "$dir_current")
+              echo "Searching for Containerfiles in: $BUILD_PATH_FILTER"
+              for cfile in $(find "$BUILD_PATH_FILTER" -name Containerfile); do
+                  cfile_clean=$(echo "$cfile" | sed 's|^\./||')
+                  context_dir=$(dirname "$cfile_clean")
+                  build_contexts["$context_dir"]="$cfile_clean"
+                  echo "Queuing $cfile_clean for manual build."
               done
-          done
+          else
+              echo "Push event triggered incremental build."
+              # Determine changed files based on the push event
+              if [ "${{ gitea.before }}" = "0000000000000000000000000000000000000000" ]; then
+                  # First push to a new branch, list all files
+                  CHANGED_FILES=$(git ls-tree -r ${{ gitea.after }} --name-only)
+                  echo "This is the first push. All tracked files considered changed."
+              else
+                  # Compare the commit before and after the push
+                  CHANGED_FILES=$(git diff --name-only ${{ gitea.before }} ${{ gitea.after }})
+                  echo "Changes detected between ${{ gitea.before }} and ${{ gitea.after }}:"
+              fi
+              
+              echo "Raw changed files: $CHANGED_FILES"
+
+              # Create a list of unique directories affected by changes
+              declare -A affected_dirs_set
+              for changed_file in $CHANGED_FILES; do
+                  dir_to_check=$(dirname "$changed_file")
+                  while [[ -n "$dir_to_check" && "$dir_to_check" != "." ]]; do
+                      affected_dirs_set["$dir_to_check"]=1
+                      dir_to_check=$(dirname "$dir_to_check")
+                  done
+                  affected_dirs_set["."]=1 # Root dir
+              done
+
+              echo "Affected directories: ${!affected_dirs_set[@]}"
+
+              for cfile in $(find . -name Containerfile); do
+                  cfile_clean=$(echo "$cfile" | sed 's|^\./||')
+                  context_dir=$(dirname "$cfile_clean")
+                  
+                  if echo "$CHANGED_FILES" | grep -q "^$cfile_clean$"; then
+                      build_contexts["$context_dir"]="$cfile_clean"
+                      echo "Queuing $cfile_clean because the Containerfile itself changed."
+                      continue
+                  fi
+
+                  dir_current="$context_dir"
+                  while [[ -n "$dir_current" ]]; do
+                      if [[ -n "${affected_dirs_set["$dir_current"]}" ]]; then
+                          build_contexts["$context_dir"]="$cfile_clean"
+                          echo "Queuing $cfile_clean because directory $dir_current is affected."
+                          break
+                      fi
+                      if [[ "$dir_current" == "." ]]; then break; fi
+                      dir_current=$(dirname "$dir_current")
+                  done
+              done
+          fi
 
           if [ ${#build_contexts[@]} -eq 0 ]; then
-              echo "No relevant Containerfiles or their contexts changed. Skipping incremental build."
+              echo "No builds required."
               exit 0
           fi
 
