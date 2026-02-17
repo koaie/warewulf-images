@@ -1,9 +1,5 @@
 FROM tea.intra.kat.sh/koa/rocky:latest
 
-# First, run the update
-# We must use exec form: ["executable", "param1", "param2"]
-RUN ["dnf", "-y", "update"]
-
-# Next, run the install
-# We list all packages in a single exec form command
-RUN dnf -y install --allowerasing  qemu-guest-agent
+RUN dnf -y update && dnf -y install --allowerasing \
+    qemu-guest-agent && \
+    dnf clean all

@@ -1,6 +1,8 @@
 FROM tea.intra.kat.sh/koa/rocky:vm
 
-RUN dnf -y update && config-manager --set-enabled powertools && dnf -y install --allowerasing \
+RUN dnf -y update && \
+    dnf -y config-manager --set-enabled powertools && \
+    dnf -y install --allowerasing \
     munge       \
     && dnf clean all
 
