@@ -191,14 +191,15 @@ jobs:
           REPO_NAME_LOWER=$(echo "${{ gitea.repository_name }}" | tr '[:upper:]' '[:lower:]')
           echo "Registry base URL: $REGISTRY_BASE"
 
-          # Determine changed files based on whether HEAD^ exists
-          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
-              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-              echo "Changes detected since previous commit (HEAD^):"
+          # Determine changed files based on the push event
+          if [ "${{ gitea.before }}" = "0000000000000000000000000000000000000000" ]; then
+              # First push to a new branch, list all files
+              CHANGED_FILES=$(git ls-tree -r ${{ gitea.after }} --name-only)
+              echo "This is the first push. All tracked files considered changed."
           else
-              # First commit, consider all files as changed
-              CHANGED_FILES=$(git ls-tree -r HEAD --name-only)
-              echo "This is the first commit. All tracked files considered changed."
+              # Compare the commit before and after the push
+              CHANGED_FILES=$(git diff --name-only ${{ gitea.before }} ${{ gitea.after }})
+              echo "Changes detected between ${{ gitea.before }} and ${{ gitea.after }}:"
           fi
           
           echo "Raw changed files: $CHANGED_FILES"
