@@ -23,7 +23,7 @@ echo "🚀 Found ${#files[@]} RPMs. Starting upload..."
 for filename in "${files[@]}"; do
     echo -n "   Uploading $filename ... "
     
-    curl --fail --silent --show-error \
+    curl --show-error \
          --user "$OCI_USERNAME:$OCI_PASSWORD" \
          --upload-file "$filename" \
          "https://$OCI_URI/api/packages/koa/rpm/rocky/el10/upload"
