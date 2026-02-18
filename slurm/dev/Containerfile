@@ -35,6 +35,7 @@ RUN dnf -y update && dnf -y install --allowerasing \
     hwloc \
     hwloc-devel \
     lua \
+    mariadb-devel \
     lua-devel \
     readline-devel \
     rrdtool-devel \
