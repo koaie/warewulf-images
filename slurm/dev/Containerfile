@@ -23,6 +23,10 @@ RUN dnf -y update && dnf -y install --allowerasing \
     openssl \
     openssl-devel \
     pam-devel \
+    dbus \
+    dbus-devel \
+    libbpf \
+    libbpf-devel \
     autoconf \
     automake \
     numactl \
