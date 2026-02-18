@@ -44,3 +44,4 @@ RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \
     chmod 0700 /etc/munge/ /var/log/munge/ /var/lib/munge/ && \
     chmod 0711 /run/munge/
 
+COPY --chmod=0755 ./upload-rpms.sh /usr/local/bin/upload-rpms
