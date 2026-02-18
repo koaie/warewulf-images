@@ -47,8 +47,7 @@ RUN dnf -y update && dnf -y install --allowerasing \
     libevent-devel \
     munge  \
     munge-libs      \
-    munge-devel && \
-    dnf clean all
+    munge-devel
 
 RUN mkdir -p /etc/munge /var/log/munge /var/lib/munge /run/munge
 RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \

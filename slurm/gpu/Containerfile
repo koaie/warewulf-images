@@ -17,11 +17,9 @@ RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/
     dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
     python3 \
     openssl \
-    openssl-devel \
     numactl \
     numactl-devel \
     hwloc \
-    hwloc-devel \
     lua \
     lua-devel \
     rrdtool-devel \
@@ -29,7 +27,6 @@ RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/
     libibmad \
     libibumad \
     libevent \
-    libevent-devel \
     munge && \
     dnf -y install --nogpgcheck --setopt=install_weak_deps=False --allowerasing \
     slurm \
