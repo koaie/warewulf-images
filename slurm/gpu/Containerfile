@@ -35,7 +35,7 @@ RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/
     slurm \
     slurm-perlapi \
     slurm-slurmd \
-    munge &&  \
+    && \
     dnf clean all
 
 RUN mkdir -p /etc/munge /var/log/munge /var/lib/munge /run/munge
