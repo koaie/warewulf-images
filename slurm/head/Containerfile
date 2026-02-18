@@ -5,7 +5,8 @@ RUN export MUNGEUSER=1001 && \
     useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge \ 
         -u $MUNGEUSER -g munge -s /sbin/nologin munge
 
-RUN dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
+RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
+    dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
     python3 \
     openssl \
     openssl-devel \
@@ -28,6 +29,10 @@ RUN dnf -y update && dnf -y install --setopt=install_weak_deps=False --alloweras
     munge-devel \
     mariadb-server \
     mariadb-devel  \
+    slurm \
+    slurm-dbd \
+    slurm-perlapi \
+    slurm-slurmctld \
     &&  \
     dnf clean all
 
