@@ -44,3 +44,4 @@ RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \
     chmod 0711 /run/munge/
 
 RUN systemctl enable munge
+RUN systemctl enable slurmd
