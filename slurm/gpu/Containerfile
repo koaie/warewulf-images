@@ -42,3 +42,4 @@ RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \
 
 RUN systemctl enable munge
 RUN systemctl enable slurmd
+RUN systemctl enable nvidia-persistenced
