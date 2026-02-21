@@ -12,11 +12,7 @@ RUN export SLURMUSER=1002 && \
     mkdir /var/log/slurm && \
     chown slurm:slurm /var/log/slurm
 
-RUN export NVUSER=1005 && \
-    groupadd -g $NVUSER nvidia-persistenced && \
-    useradd -m -c "nvidia-persistenced user" -d / \
-        -u $NVUSER -g nvidia-persistenced  -s /bin/bash nvidia-persistenced  && \
-    mkdir /var/run/nvidia-persistenced && \
+RUN mkdir /var/run/nvidia-persistenced && \
     chown nvidia-persistenced:nvidia-persistenced /var/run/nvidia-persistenced
 
 
