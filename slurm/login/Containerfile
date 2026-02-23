@@ -15,9 +15,8 @@ RUN export SLURMUSER=1002 && \
 RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
     dnf -y update && \
     dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo && \
-    dnf -y install --allowerasing --setopt=install_weak_deps=False \
+    dnf -y update && dnf -y install --allowerasing --setopt=install_weak_deps=False \
     cuda-minimal-build-13-1 && \
-    dnf -y update && dnf -y install --allowerasing \
     gcc \
     gcc-c++ \
     tar \
