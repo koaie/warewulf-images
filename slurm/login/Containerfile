@@ -54,7 +54,7 @@ RUN dnf -y update && \
     munge-libs      \
     munge-devel && \
     dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
-    dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
+    dnf -y update && dnf -y install --nogpgcheck --setopt=install_weak_deps=False --allowerasing \
     slurm \
     slurm-perlapi && \
     dnf clean all
