@@ -49,6 +49,7 @@ RUN dnf -y update && \
     libibumad \
     libevent \
     libevent-devel \
+    python3-pip \
     munge  \
     munge-libs      \
     munge-devel && \
