@@ -1,0 +1,66 @@
+FROM tea.intra.kat.sh/koa/rocky:vm
+
+RUN export MUNGEUSER=1001 && \
+    groupadd -g $MUNGEUSER munge && \
+    useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge \ 
+        -u $MUNGEUSER -g munge -s /sbin/nologin munge
+
+RUN export SLURMUSER=1002 && \
+    groupadd -g $SLURMUSER slurm && \
+    useradd -m -c "SLURM workload manager" -d /var/lib/slurm \
+        -u $SLURMUSER -g slurm -s /bin/bash slurm && \
+    mkdir /var/log/slurm && \
+    chown slurm:slurm /var/log/slurm
+
+RUN dnf -y update && \
+    dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo && \
+    dnf -y install --allowerasing --setopt=install_weak_deps=False \
+    cuda-minimal-build-13-1 && \
+    dnf -y update && dnf -y install --allowerasing \
+    gcc \
+    gcc-c++ \
+    tar \
+    make \
+    perl \
+    bzip2 \
+    python3 \
+    openssl \
+    openssl-devel \
+    pam-devel \
+    dbus \
+    dbus-devel \
+    libbpf \
+    libbpf-devel \
+    autoconf \
+    automake \
+    numactl \
+    numactl-devel \
+    rpm-build \
+    hwloc \
+    hwloc-devel \
+    lua \
+    mariadb-devel \
+    lua-devel \
+    readline-devel \
+    rrdtool-devel \
+    ncurses-devel \
+    man2html \
+    libibmad \
+    libibumad \
+    libevent \
+    libevent-devel \
+    munge  \
+    munge-libs      \
+    munge-devel && \
+    dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
+    dnf -y update && dnf -y install --setopt=install_weak_deps=False --allowerasing \
+    slurm \
+    slurm-perlapi && \
+    dnf clean all
+
+RUN mkdir -p /etc/munge /var/log/munge /var/lib/munge /run/munge
+RUN chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ && \
+    chmod 0700 /etc/munge/ /var/log/munge/ /var/lib/munge/ && \
+    chmod 0711 /run/munge/
+
+RUN systemctl enable munge
