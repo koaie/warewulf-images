@@ -12,7 +12,8 @@ RUN export SLURMUSER=1002 && \
     mkdir /var/log/slurm && \
     chown slurm:slurm /var/log/slurm
 
-RUN dnf -y update && \
+RUN dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
+    dnf -y update && \
     dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo && \
     dnf -y install --allowerasing --setopt=install_weak_deps=False \
     cuda-minimal-build-13-1 && \
@@ -53,8 +54,7 @@ RUN dnf -y update && \
     munge  \
     munge-libs      \
     munge-devel && \
-    dnf config-manager --add-repo https://tea.intra.kat.sh/api/packages/koa/rpm/rocky/el10.repo && \
-    dnf -y update && dnf -y install --nogpgcheck --setopt=install_weak_deps=False --allowerasing \
+    dnf -y install --nogpgcheck --setopt=install_weak_deps=False --allowerasing \
     slurm \
     slurm-perlapi && \
     dnf clean all
