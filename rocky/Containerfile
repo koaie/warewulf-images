@@ -33,6 +33,7 @@ RUN dnf -y update && dnf -y upgrade && \
 	curl	\
 	rsync	\
 	dnf-plugins-core \
+	crontabs	\
 	chrony \
 	&& dnf clean all
 
